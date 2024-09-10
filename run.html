@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Merge HTML Files into Text</title>
+</head>
+<body>
+  <h1>Merge HTML Files into a Single Text File</h1>
+  <input type="file" id="fileInput" multiple accept=".html" />
+  <button id="mergeButton">Merge HTML Files</button>
+  <a id="downloadLink" style="display:none">Download Merged Text File</a>
+
+  <script>
+    const fileInput = document.getElementById("fileInput");
+    const mergeButton = document.getElementById("mergeButton");
+    const downloadLink = document.getElementById("downloadLink");
+
+    // Function to strip HTML and get visible text content
+    function extractTextFromHTML(htmlString) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlString;
+
+      // Remove script, style, and head elements
+      const scripts = tempDiv.getElementsByTagName('script');
+      const styles = tempDiv.getElementsByTagName('style');
+      const heads = tempDiv.getElementsByTagName('head');
+
+      while (scripts.length > 0) scripts[0].remove();
+      while (styles.length > 0) styles[0].remove();
+      while (heads.length > 0) heads[0].remove();
+
+      // Return the visible text content
+      return tempDiv.innerText.trim();
+    }
+
+    // Function to merge the uploaded HTML files into a single text file
+    mergeButton.addEventListener("click", async () => {
+      if (fileInput.files) {
+        let mergedText = "";
+
+        // Loop through all uploaded files
+        for (const file of Array.from(fileInput.files)) {
+          const content = await file.text(); // Read the file contents as text
+          
+          // Extract only the visible text from the HTML
+          const visibleText = extractTextFromHTML(content);
+
+          // Append the visible text to the merged text
+          mergedText += visibleText + "\n\n"; // Add spacing between file contents
+        }
+
+        // Create a Blob from the merged text
+        const blob = new Blob([mergedText], { type: "text/plain" });
+
+        // Create a downloadable link
+        const url = URL.createObjectURL(blob);
+        downloadLink.href = url;
+        downloadLink.download = "merged_text.txt";
+        downloadLink.style.display = "block";
+        downloadLink.textContent = "Download Merged Text File";
+      } else {
+        alert("Please select HTML files to merge.");
+      }
+    });
+  </script>
+</body>
+</html>
